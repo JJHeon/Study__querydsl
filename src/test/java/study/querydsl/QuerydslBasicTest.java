@@ -284,11 +284,26 @@ public class QuerydslBasicTest {
 
         Member findMember = queryFactory
                 .selectFrom(member)
+                .join(member.team, team)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("패치 조인 미적용").isFalse();
+    }
+
+    @Test
+    public void fetchJoinUse(){
+        em.flush();
+        em.clear();
+
+        Member findMember = queryFactory
+                .selectFrom(member)
                 .join(member.team, team).fetchJoin()
                 .where(member.username.eq("member1"))
                 .fetchOne();
 
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
-        assertThat(loaded).as("패치 조인 미적용").isTrue();
+        assertThat(loaded).as("패치 조인 적용").isTrue();
     }
 }
